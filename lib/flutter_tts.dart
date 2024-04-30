@@ -349,6 +349,13 @@ class FlutterTts {
   Future<dynamic> awaitSynthCompletion(bool awaitCompletion) async =>
       await _channel.invokeMethod('awaitSynthCompletion', awaitCompletion);
 
+  /// [Future] which invokes the platform specific method for init
+  Future<dynamic> init(String? language, String? engine) async =>
+      await _channel.invokeMethod('init', <String, dynamic>{
+        "language": language,
+        "engine": engine,
+      });
+
   /// [Future] which invokes the platform specific method for speaking
   Future<dynamic> speak(String text) async =>
       await _channel.invokeMethod('speak', text);
