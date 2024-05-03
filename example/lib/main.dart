@@ -29,13 +29,19 @@ class _MyAppState extends State<MyApp> {
   TtsState ttsState = TtsState.stopped;
 
   bool get isPlaying => ttsState == TtsState.playing;
+
   bool get isStopped => ttsState == TtsState.stopped;
+
   bool get isPaused => ttsState == TtsState.paused;
+
   bool get isContinued => ttsState == TtsState.continued;
 
   bool get isIOS => !kIsWeb && Platform.isIOS;
+
   bool get isAndroid => !kIsWeb && Platform.isAndroid;
+
   bool get isWindows => !kIsWeb && Platform.isWindows;
+
   bool get isWeb => kIsWeb;
 
   @override
@@ -44,7 +50,7 @@ class _MyAppState extends State<MyApp> {
     initTts();
   }
 
-  dynamic initTts() {
+  dynamic initTts() async {
     flutterTts = FlutterTts();
 
     _setAwaitOptions();
@@ -204,6 +210,25 @@ class _MyAppState extends State<MyApp> {
           scrollDirection: Axis.vertical,
           child: Column(
             children: [
+              IconButton(
+                onPressed: () async {
+                  try {
+                    await flutterTts.init("en-US", null);
+                    await flutterTts.init("yue-HK", null);
+                    await flutterTts.init("zh-CN", null);
+                    await flutterTts.awaitSpeakCompletion(true);
+                    await flutterTts.setLanguage("en-US");
+                    await flutterTts.speak("A001 please goto counter 1");
+                    await flutterTts.setLanguage("zh-HK");
+                    await flutterTts.speak("A001 請到一號窗");
+                    await flutterTts.setLanguage("zh-CN");
+                    await flutterTts.speak("A001 请到一号窗");
+                  } catch (e) {
+                    print(e);
+                  }
+                },
+                icon: Icon(Icons.add),
+              ),
               _inputSection(),
               _btnSection(),
               _engineSection(),

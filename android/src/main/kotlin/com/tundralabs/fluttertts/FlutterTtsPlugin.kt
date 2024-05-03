@@ -215,7 +215,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                         tts.setOnUtteranceProgressListener(utteranceProgressListener)
                         try {
                             if (locale != null && isLanguageAvailable(locale)) {
-                                tts.setLanguage(locale)
+                                val result = tts.setLanguage(locale)
+                                print(result)
                             }
                         } catch (e: NullPointerException) {
                             Log.e(tag, "getDefaultLocale: " + e.message)
@@ -259,9 +260,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         )
 
         if (ttsEngineLanguageMap.isEmpty() || !ttsEngineLanguageMap.containsKey(engine)) {
-            ttsEngineLanguageMap.set(
-                engine ?: ttsEngine,
-                hashMapOf((locale ?: ttsLocale) to tts)
+            ttsEngineLanguageMap.plusAssign(
+                (engine ?: ttsEngine) to (hashMapOf((locale ?: ttsLocale) to tts))
             )
             return
         }
@@ -283,9 +283,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         }
 
         when (call.method) {
-            "init" -> {
+            "init" ->
                 init(call, result)
-            }
 
             "speak" -> {
                 var text: String = call.arguments.toString()
@@ -461,7 +460,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         val language: String? = call.argument("language")
         var locale: Locale? = if (language != null) Locale.forLanguageTag(language) else null
 
-        val tts = ttsEngineLanguageMap.get(engine)?.get(locale)
+        val tts = ttsEngineLanguageMap.get(engine ?: ttsEngine)?.get(locale ?: ttsLocale)
         if (tts != null) {
             this.tts = tts
             result.success(1)
@@ -666,18 +665,24 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     private fun speak(text: String): Boolean {
         val uuid: String = UUID.randomUUID().toString()
         utterances[uuid] = text
-        return if (ismServiceConnectionUsable(tts)) {
-            if (silencems > 0) {
-                tts!!.playSilentUtterance(
-                    silencems.toLong(), TextToSpeech.QUEUE_FLUSH, SILENCE_PREFIX + uuid
-                )
-                tts!!.speak(text, TextToSpeech.QUEUE_ADD, bundle, uuid) == 0
+        return try {
+            if (ismServiceConnectionUsable(tts)) {
+                if (silencems > 0) {
+                    tts!!.playSilentUtterance(
+                        silencems.toLong(), TextToSpeech.QUEUE_FLUSH, SILENCE_PREFIX + uuid
+                    )
+                    val result = tts!!.speak(text, TextToSpeech.QUEUE_ADD, bundle, uuid)
+                    return result == 0
+                } else {
+                    val result = tts!!.speak(text, queueMode, bundle, uuid)
+                    return result == 0
+                }
             } else {
-                tts!!.speak(text, queueMode, bundle, uuid) == 0
+                ttsStatus = null
+                initTextToSpeechClient()
+                false
             }
-        } else {
-            ttsStatus = null
-            initTextToSpeechClient()
+        } catch (e: Exception) {
             false
         }
     }

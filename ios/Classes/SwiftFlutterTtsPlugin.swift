@@ -19,6 +19,8 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   var autoStopSharedSession: Bool = true
   var speakResult: FlutterResult? = nil
   var synthResult: FlutterResult? = nil
+    var ttsEngine: String? = nil
+    var ttsLocale: Locale? = nil
     
 
   var channel = FlutterMethodChannel()
@@ -44,6 +46,8 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
+    case "init":
+        self.initTTS(call: call, result: result)
     case "speak":
       let text: String = call.arguments as! String
       self.speak(text: text, result: result)
@@ -136,6 +140,10 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       result(FlutterMethodNotImplemented)
     }
   }
+    
+    private func initTTS(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        result(1)
+    }
 
   private func speak(text: String, result: @escaping FlutterResult) {
     if (self.synthesizer.isPaused) {
