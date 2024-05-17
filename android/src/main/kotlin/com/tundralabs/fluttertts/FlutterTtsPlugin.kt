@@ -226,7 +226,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
                         this.tts = tts
                         ttsEngine = engine ?: tts.defaultEngine
-                        ttsLocale = locale ?: tts.defaultVoice.locale
+                        ttsLocale = locale ?: tts.voice?.locale
                         if (engine == null || locale == null) {
                             ttsEngineLanguageMap.get(engine)?.let { it.remove(locale) }
                             if (ttsEngineLanguageMap.containsKey(ttsEngine)) {
